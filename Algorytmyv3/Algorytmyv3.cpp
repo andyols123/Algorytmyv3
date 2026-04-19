@@ -14,21 +14,19 @@
 #include "SortowanieKubelkowe.h"
 
 int main() {
-    const int MAX_LIMIT = 30000;
-    std::vector<int> progi = { 1000, 5000, 10000, 20000, 30000 };
+    std::vector<int> progi = { 10000, 100000, 500000, 1000000 };
 
-    // 1. Budowanie slownika tytulow (basics.tsv)
-    //unordered_map<..> slownikTytulow to hashmap - struktura dzia³aj¹ca z wydajnoœci¹ O(1) 
+    //ETAP 1: Wczytywanie wszystkich tytu³ów
     std::unordered_map<std::string, std::string> slownikTytulow;
     std::ifstream fileBasics("basics.tsv");
 
-    std::cout << "Etap 1: Budowanie slownika tytulow...\n";
-    auto startBasics = std::chrono::high_resolution_clock::now();
+    std::cout << "Etap 1: Budowanie pelnego slownika tytulow...\n";
+    auto sBasics = std::chrono::high_resolution_clock::now();
 
     if (fileBasics.is_open()) {
         std::string line;
-        std::getline(fileBasics, line); // Naglowek
-        while (std::getline(fileBasics, line) && slownikTytulow.size() < MAX_LIMIT * 4) {
+        std::getline(fileBasics, line); // Pominiecie naglowka
+        while (std::getline(fileBasics, line)) {
             std::stringstream ss(line);
             std::string tconst, type, pTitle;
             std::getline(ss, tconst, '\t');
@@ -38,70 +36,84 @@ int main() {
         }
         fileBasics.close();
     }
+    auto eBasics = std::chrono::high_resolution_clock::now();
+    std::cout << "Wczytano slownik. Czas: " << std::chrono::duration<double>(eBasics - sBasics).count() << " s\n";
+    std::cout << "Liczba tytulow w slowniku tytulow: " << slownikTytulow.size() << "\n\n";
 
-    auto endBasics = std::chrono::high_resolution_clock::now();
-    std::cout << "Czas budowania struktury tytulow: "
-        << std::chrono::duration<double>(endBasics - startBasics).count() << " s\n\n";
-
-    // 2. Wczytywanie ocen (ratings.tsv)
+    //ETAP 2: Wczytywanie wszystkich ocen (Punkt 1 i 2 zadania)
     std::vector<MovieRating> wszystkieFilmy;
+    // Wstêpna rezerwacja pamiêci
+    wszystkieFilmy.reserve(1300000);
+
     std::ifstream fileRatings("ratings.tsv");
     if (!fileRatings.is_open()) {
         std::cerr << "Blad: Brak pliku ratings.tsv!\n";
         return 1;
     }
 
-    std::cout << "Etap 2: Wczytywanie " << MAX_LIMIT << " ocen...\n";
+    std::cout << "Etap 2: Wczytywanie danych z pliku ratings.tsv...\n";
     std::string line;
-    std::getline(fileRatings, line);
-    while (std::getline(fileRatings, line) && (int)wszystkieFilmy.size() < MAX_LIMIT) {
+    std::getline(fileRatings, line); // Naglowek
+
+    while (std::getline(fileRatings, line)) {
         std::stringstream ss(line);
         std::string tconst, ratingStr;
         std::getline(ss, tconst, '\t');
         std::getline(ss, ratingStr, '\t');
 
+        //Filtrowanie pustych wpisow
         if (!ratingStr.empty() && ratingStr != "\\N") {
-            //std::stod konwertuje string na double
-            wszystkieFilmy.push_back({ tconst, std::stod(ratingStr) });
+            try {
+                wszystkieFilmy.push_back({ tconst, std::stod(ratingStr) });
+            }
+            catch (...) { continue; }
         }
     }
     fileRatings.close();
-    std::cout << "Wczytano " << wszystkieFilmy.size() << " rekordow.\n\n";
+    std::cout << "Zaladowano lacznie: " << wszystkieFilmy.size() << " rekordow.\n\n";
 
-    // 3. Analiza efektywnosci dla roznych progow (Zadanie 3 i 4)
+    //ETAP 3: Analiza efektywnosci (Punkt 3 i 4 zadania)
     std::cout << std::fixed << std::setprecision(5);
 
+    // Dodajemy "maksymalna ilosc danych" do progów, jeœli nie ma jej na liœcie
+    int maxData = wszystkieFilmy.size();
+    progi.push_back(maxData);
+
     for (int N : progi) {
-        if (N > (int)wszystkieFilmy.size()) continue;
 
-        std::cout << "=== ANALIZA DLA N = " << N << " ===\n";
+        std::cout << ">>> ANALIZA DLA N = " << N << " <<<\n";
 
-        // --- Quicksort ---
+        // Kopiowanie danych do tablic roboczych dla kazdego algorytmu
         MovieRating* tab1 = new MovieRating[N];
-        for (int i = 0; i < N; ++i) tab1[i] = wszystkieFilmy[i];
+        MovieRating* tab2 = new MovieRating[N];
+        MovieRating* tab3 = new MovieRating[N];
+        MovieRating* pom = new MovieRating[N]; // Dla MergeSort
+
+        for (int i = 0; i < N; ++i) {
+            tab1[i] = tab2[i] = tab3[i] = wszystkieFilmy[i];
+        }
+
+
+        // 1. Quicksort
         auto s1 = std::chrono::high_resolution_clock::now();
         SortowanieSzybkie::Sortuj_szybko(tab1, N, 0, N - 1);
         auto e1 = std::chrono::high_resolution_clock::now();
         std::cout << " [QS] Czas: " << std::chrono::duration<double>(e1 - s1).count() << " s\n";
 
-        // --- MergeSort ---
-        MovieRating* tab2 = new MovieRating[N];
-        MovieRating* pom = new MovieRating[N];
-        for (int i = 0; i < N; ++i) tab2[i] = wszystkieFilmy[i];
+
+        // 2. MergeSort
         auto s2 = std::chrono::high_resolution_clock::now();
         SortowaniePrzezScalanie::Sortuj(tab2, pom, N, 0, N - 1);
         auto e2 = std::chrono::high_resolution_clock::now();
         std::cout << " [MS] Czas: " << std::chrono::duration<double>(e2 - s2).count() << " s\n";
 
-        // --- BucketSort ---
-        MovieRating* tab3 = new MovieRating[N];
-        for (int i = 0; i < N; ++i) tab3[i] = wszystkieFilmy[i];
+        // 3. BucketSort
         auto s3 = std::chrono::high_resolution_clock::now();
         SortowanieKubelkowe::Sortuj(tab3, N);
         auto e3 = std::chrono::high_resolution_clock::now();
         std::cout << " [BS] Czas: " << std::chrono::duration<double>(e3 - s3).count() << " s\n";
 
-        // Statystyki (Zadanie 4)
+        // Punkt 4: Statystyki
         double suma = 0;
         for (int i = 0; i < N; ++i) suma += tab3[i].rating;
         double srednia = suma / N;
@@ -110,19 +122,24 @@ int main() {
         std::cout << " -> Srednia: " << std::setprecision(2) << srednia
             << " | Mediana: " << mediana << "\n\n";
 
-        delete[] tab1; delete[] tab2; delete[] pom; delete[] tab3;
+        delete[] tab1; delete[] tab2; delete[] tab3; delete[] pom;
     }
 
-    // 4. Zapis do pliku (Zadanie 5) (multimap - drzewo czerwono czarne )
-    std::cout << "Etap 3: Budowanie drzewa binarnego dla zestawu " << MAX_LIMIT << " i zapis...\n";
+    //ETAP 4: Zapis maksymalnej ilosci danych (Punkt 5 zadania)
+    std::cout << "Etap 4: Budowanie drzewa binarnego dla wszystkich danych (" << maxData << ") i zapis...\n";
     std::multimap<double, std::string> drzewo;
 
-    for (int i = 0; i < MAX_LIMIT; ++i) {
-        std::string tytul = (slownikTytulow.count(wszystkieFilmy[i].tconst))
-            ? slownikTytulow[wszystkieFilmy[i].tconst]
-            : wszystkieFilmy[i].tconst;
-        drzewo.insert({ wszystkieFilmy[i].rating, tytul });
+    auto s4 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < wszystkieFilmy.size(); ++i) {
+        // Jesli jest tytu³ dla danego tconst, tworzony jest wpis do zrównowa¿onego drzewa binarnego (czerwono-czarnego)
+        if (slownikTytulow.count(wszystkieFilmy[i].tconst))
+        {
+            std::string tytul = slownikTytulow[wszystkieFilmy[i].tconst];
+            drzewo.insert({ wszystkieFilmy[i].rating, tytul });
+        }
     }
+    auto e4 = std::chrono::high_resolution_clock::now();
+    std::cout << " Tworzenie zrownowazonego drzewa binarnego " << std::chrono::duration<double>(e4 - s4).count() << " s\n";
 
     std::ofstream wyjscie("posortowane_filmy.txt");
     if (wyjscie.is_open()) {
@@ -130,8 +147,9 @@ int main() {
             wyjscie << std::fixed << std::setprecision(1) << w.first << "\t" << w.second << "\n";
         }
         wyjscie.close();
-        std::cout << "Plik posortowane_filmy.txt zostal wygenerowany pomyslnie.\n";
+        std::cout << "Plik wynikowy zostal wygenerowany.\n";
     }
 
     return 0;
+
 }
