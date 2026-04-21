@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\Algorytmyv2\Algorytmyv2\SortowaniePrzezScalanie.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DrzewoCzerwonoCzarne.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Algorytmyv2\Algorytmyv2\MovieRating.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Algorytmyv2\Algorytmyv2\SortowanieSzybkie.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrzewoCzerwonoCzarne.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

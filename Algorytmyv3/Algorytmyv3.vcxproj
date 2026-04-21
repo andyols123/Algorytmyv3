@@ -130,12 +130,14 @@
     <ClCompile Include="..\..\Algorytmyv2\Algorytmyv2\SortowaniePrzezScalanie.cpp" />
     <ClCompile Include="..\..\Algorytmyv2\Algorytmyv2\SortowanieSzybkie.cpp" />
     <ClCompile Include="Algorytmyv3.cpp" />
+    <ClCompile Include="DrzewoCzerwonoCzarne.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Algorytmyv2\Algorytmyv2\MovieRating.h" />
     <ClInclude Include="..\..\Algorytmyv2\Algorytmyv2\SortowanieKubelkowe.h" />
     <ClInclude Include="..\..\Algorytmyv2\Algorytmyv2\SortowaniePrzezScalanie.h" />
     <ClInclude Include="..\..\Algorytmyv2\Algorytmyv2\SortowanieSzybkie.h" />
+    <ClInclude Include="DrzewoCzerwonoCzarne.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

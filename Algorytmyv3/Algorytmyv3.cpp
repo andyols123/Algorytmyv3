@@ -12,8 +12,10 @@
 #include "SortowanieSzybkie.h"
 #include "SortowaniePrzezScalanie.h"
 #include "SortowanieKubelkowe.h"
+#include "DrzewoCzerwonoCzarne.h"
 
 int main() {
+    auto sProgram = std::chrono::high_resolution_clock::now();
     std::vector<int> progi = { 10000, 100000, 500000, 1000000 };
 
     //ETAP 1: Wczytywanie wszystkich tytu³ów
@@ -75,7 +77,6 @@ int main() {
     //ETAP 3: Analiza efektywnosci (Punkt 3 i 4 zadania)
     std::cout << std::fixed << std::setprecision(5);
 
-    // Dodajemy "maksymalna ilosc danych" do progów, jeœli nie ma jej na liœcie
     int maxData = wszystkieFilmy.size();
     progi.push_back(maxData);
 
@@ -125,15 +126,14 @@ int main() {
         delete[] tab1; delete[] tab2; delete[] tab3; delete[] pom;
     }
 
-    //ETAP 4: Zapis maksymalnej ilosci danych (Punkt 5 zadania)
+    // ETAP 4: Wykorzystanie w³asnej implementacji zwrównowa¿onego drzewa binarnego w postaci
+    //drzewa czerwono - czarnego
     std::cout << "Etap 4: Budowanie drzewa binarnego dla wszystkich danych (" << maxData << ") i zapis...\n";
-    std::multimap<double, std::string> drzewo;
+    DrzewoCzerwonoCzarne drzewo; // Zastêpuje std::multimap<double, std::string>
 
     auto s4 = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < wszystkieFilmy.size(); ++i) {
-        // Jesli jest tytu³ dla danego tconst, tworzony jest wpis do zrównowa¿onego drzewa binarnego (czerwono-czarnego)
-        if (slownikTytulow.count(wszystkieFilmy[i].tconst))
-        {
+        if (slownikTytulow.count(wszystkieFilmy[i].tconst)) {
             std::string tytul = slownikTytulow[wszystkieFilmy[i].tconst];
             drzewo.insert({ wszystkieFilmy[i].rating, tytul });
         }
@@ -149,6 +149,8 @@ int main() {
         wyjscie.close();
         std::cout << "Plik wynikowy zostal wygenerowany.\n";
     }
+    auto eProgram = std::chrono::high_resolution_clock::now();
+    std::cout << "Calkowity czas dzialania programu: " << std::chrono::duration<double>(eProgram - sProgram).count() << " s\n";
 
     return 0;
 
