@@ -75,13 +75,11 @@ int main() {
     std::cout << "Zaladowano lacznie: " << wszystkieFilmy.size() << " rekordow.\n\n";
 
     //ETAP 3: Analiza efektywnosci (Punkt 3 i 4 zadania)
-    std::cout << std::fixed << std::setprecision(5);
-
     int maxData = wszystkieFilmy.size();
     progi.push_back(maxData);
 
     for (int N : progi) {
-
+        std::cout << std::fixed << std::setprecision(5);
         std::cout << ">>> ANALIZA DLA N = " << N << " <<<\n";
 
         // Kopiowanie danych do tablic roboczych dla kazdego algorytmu
