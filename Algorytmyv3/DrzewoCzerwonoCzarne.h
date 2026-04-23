@@ -1,22 +1,21 @@
 #pragma once
 #include <string>
-#include <utility>
 
 enum Kolor { CZERWONY, CZARNY };
 
 struct Wezel {
-    double ocena;
-    std::string tytul;
+    std::string tconst; // Klucz: ID filmu
+    std::string tytul;  // Wartoœæ: Tytu³ filmu
     Kolor kolor;
     Wezel* lewy, * prawy, * rodzic;
 
-    Wezel(double o, std::string t);
+    Wezel(std::string id, std::string t);
 };
 
 class DrzewoCzerwonoCzarne {
 private:
     Wezel* korzen;
-    Wezel* NIL; // Wartownik zastêpuj¹cy nullptr
+    Wezel* NIL;
 
     void rotacjaLewo(Wezel* x);
     void rotacjaPrawo(Wezel* x);
@@ -27,18 +26,6 @@ public:
     DrzewoCzerwonoCzarne();
     ~DrzewoCzerwonoCzarne();
 
-    void insert(std::pair<double, std::string> dane);
-
-    class Iterator {
-        Wezel* biezacy;
-        Wezel* nil_ref;
-    public:
-        Iterator(Wezel* start, Wezel* n) : biezacy(start), nil_ref(n) {}
-        bool operator!=(const Iterator& inny) const { return biezacy != inny.biezacy; }
-        std::pair<double, std::string> operator*() const { return { biezacy->ocena, biezacy->tytul }; }
-        Iterator& operator++();
-    };
-
-    Iterator begin();
-    Iterator end() { return Iterator(NIL, NIL); }
+    void insert(std::string id, std::string tytul);
+    std::string szukaj(std::string id); // Metoda do pobierania tytu³u po ID
 };

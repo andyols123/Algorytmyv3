@@ -1,19 +1,16 @@
 #include "DrzewoCzerwonoCzarne.h"
 
-// Konstruktor wêz³a
-Wezel::Wezel(double o, std::string t)
-    : ocena(o), tytul(t), kolor(CZERWONY), lewy(nullptr), prawy(nullptr), rodzic(nullptr) {
+Wezel::Wezel(std::string id, std::string t)
+    : tconst(id), tytul(t), kolor(CZERWONY), lewy(nullptr), prawy(nullptr), rodzic(nullptr) {
 }
 
-// Konstruktor drzewa
 DrzewoCzerwonoCzarne::DrzewoCzerwonoCzarne() {
-    NIL = new Wezel(0, "");
+    NIL = new Wezel("", "");
     NIL->kolor = CZARNY;
     NIL->lewy = NIL->prawy = NIL;
     korzen = NIL;
 }
 
-// Destruktor
 DrzewoCzerwonoCzarne::~DrzewoCzerwonoCzarne() {
     usunDrzewo(korzen);
     delete NIL;
@@ -25,6 +22,37 @@ void DrzewoCzerwonoCzarne::usunDrzewo(Wezel* w) {
         usunDrzewo(w->prawy);
         delete w;
     }
+}
+
+void DrzewoCzerwonoCzarne::insert(std::string id, std::string tytul) {
+    Wezel* wezel = new Wezel(id, tytul);
+    wezel->lewy = wezel->prawy = NIL;
+    Wezel* r_temp = nullptr;
+    Wezel* biezacy = korzen;
+
+    while (biezacy != NIL) {
+        r_temp = biezacy;
+        if (wezel->tconst < biezacy->tconst) biezacy = biezacy->lewy;
+        else biezacy = biezacy->prawy;
+    }
+    wezel->rodzic = r_temp;
+    if (r_temp == nullptr) korzen = wezel;
+    else if (wezel->tconst < r_temp->tconst) r_temp->lewy = wezel;
+    else r_temp->prawy = wezel;
+
+    if (wezel->rodzic == nullptr) { wezel->kolor = CZARNY; return; }
+    if (wezel->rodzic->rodzic == nullptr) return;
+    naprawWstawianie(wezel);
+}
+
+std::string DrzewoCzerwonoCzarne::szukaj(std::string id) {
+    Wezel* b = korzen;
+    while (b != NIL) {
+        if (id == b->tconst) return b->tytul;
+        if (id < b->tconst) b = b->lewy;
+        else b = b->prawy;
+    }
+    return "";
 }
 
 void DrzewoCzerwonoCzarne::rotacjaLewo(Wezel* x) {
@@ -52,93 +80,32 @@ void DrzewoCzerwonoCzarne::rotacjaPrawo(Wezel* x) {
 }
 
 void DrzewoCzerwonoCzarne::naprawWstawianie(Wezel* k) {
-    while (k != korzen && k->rodzic->kolor == CZERWONY) {
+    while (k->rodzic->kolor == CZERWONY) {
         if (k->rodzic == k->rodzic->rodzic->lewy) {
-            Wezel* wujek = k->rodzic->rodzic->prawy;
-            if (wujek->kolor == CZERWONY) {
-                k->rodzic->kolor = CZARNY;
-                wujek->kolor = CZARNY;
-                k->rodzic->rodzic->kolor = CZERWONY;
-                k = k->rodzic->rodzic;
+            Wezel* u = k->rodzic->rodzic->prawy;
+            if (u->kolor == CZERWONY) {
+                u->kolor = CZARNY; k->rodzic->kolor = CZARNY;
+                k->rodzic->rodzic->kolor = CZERWONY; k = k->rodzic->rodzic;
             }
             else {
-                if (k == k->rodzic->prawy) {
-                    k = k->rodzic;
-                    rotacjaLewo(k);
-                }
-                k->rodzic->kolor = CZARNY;
-                k->rodzic->rodzic->kolor = CZERWONY;
+                if (k == k->rodzic->prawy) { k = k->rodzic; rotacjaLewo(k); }
+                k->rodzic->kolor = CZARNY; k->rodzic->rodzic->kolor = CZERWONY;
                 rotacjaPrawo(k->rodzic->rodzic);
             }
         }
         else {
-            Wezel* wujek = k->rodzic->rodzic->lewy;
-            if (wujek->kolor == CZERWONY) {
-                k->rodzic->kolor = CZARNY;
-                wujek->kolor = CZARNY;
-                k->rodzic->rodzic->kolor = CZERWONY;
-                k = k->rodzic->rodzic;
+            Wezel* u = k->rodzic->rodzic->lewy;
+            if (u->kolor == CZERWONY) {
+                u->kolor = CZARNY; k->rodzic->kolor = CZARNY;
+                k->rodzic->rodzic->kolor = CZERWONY; k = k->rodzic->rodzic;
             }
             else {
-                if (k == k->rodzic->lewy) {
-                    k = k->rodzic;
-                    rotacjaPrawo(k);
-                }
-                k->rodzic->kolor = CZARNY;
-                k->rodzic->rodzic->kolor = CZERWONY;
+                if (k == k->rodzic->lewy) { k = k->rodzic; rotacjaPrawo(k); }
+                k->rodzic->kolor = CZARNY; k->rodzic->rodzic->kolor = CZERWONY;
                 rotacjaLewo(k->rodzic->rodzic);
             }
         }
+        if (k == korzen) break;
     }
     korzen->kolor = CZARNY;
-}
-
-void DrzewoCzerwonoCzarne::insert(std::pair<double, std::string> dane) {
-    Wezel* wezel = new Wezel(dane.first, dane.second);
-    wezel->lewy = wezel->prawy = NIL;
-
-    Wezel* rodzic_temp = nullptr;
-    Wezel* biezacy = korzen;
-
-    while (biezacy != NIL) {
-        rodzic_temp = biezacy;
-        if (wezel->ocena < biezacy->ocena) biezacy = biezacy->lewy;
-        else biezacy = biezacy->prawy;
-    }
-
-    wezel->rodzic = rodzic_temp;
-
-    if (rodzic_temp == nullptr) korzen = wezel;
-    else if (wezel->ocena < rodzic_temp->ocena) rodzic_temp->lewy = wezel;
-    else rodzic_temp->prawy = wezel;
-
-    if (wezel->rodzic == nullptr) {
-        wezel->kolor = CZARNY;
-        return;
-    }
-    if (wezel->rodzic->rodzic == nullptr) return;
-
-    naprawWstawianie(wezel);
-}
-
-DrzewoCzerwonoCzarne::Iterator& DrzewoCzerwonoCzarne::Iterator::operator++() {
-    if (biezacy->prawy != nil_ref) {
-        biezacy = biezacy->prawy;
-        while (biezacy->lewy != nil_ref) biezacy = biezacy->lewy;
-    }
-    else {
-        Wezel* r = biezacy->rodzic;
-        while (r != nullptr && biezacy == r->prawy) {
-            biezacy = r;
-            r = r->rodzic;
-        }
-        biezacy = (r == nullptr) ? nil_ref : r;
-    }
-    return *this;
-}
-
-DrzewoCzerwonoCzarne::Iterator DrzewoCzerwonoCzarne::begin() {
-    Wezel* x = korzen;
-    if (x != NIL) while (x->lewy != NIL) x = x->lewy;
-    return Iterator(x, NIL);
 }
